@@ -6,10 +6,11 @@
     <title>舞蹈排隊形</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
             margin: 0;
-            padding: 10px;
+            padding: 16px 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -17,72 +18,88 @@
         }
 
         h2 {
-            color: #333;
-            margin: 10px 0 5px 0;
-            font-size: 20px;
+            color: #f8fafc;
+            margin: 8px 0 12px 0;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
-        /* 控制面板樣式 */
         .control-panel {
-            background: white;
-            padding: 12px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
+            background: #1e293b;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 16px;
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 340px; 
+            box-sizing: border-box;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr; 
             align-items: center;
-            justify-content: center;
-            max-width: 100%;
+            width: 100%;
+            height: 38px;
         }
 
-        label {
-            font-weight: bold;
-            color: #555;
-            font-size: 13px;
-        }
-
-        input[type="number"] {
-            width: 45px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            text-align: center;
-        }
-
-        input[type="range"] {
-            width: 70px;
-            vertical-align: middle;
-        }
+        .col-left { display: flex; justify-content: flex-start; align-items: center; }
+        .col-center { display: flex; justify-content: center; align-items: center; }
+        .col-right { display: flex; justify-content: flex-end; align-items: center; }
 
         button {
-            padding: 8px 10px;
+            width: 95px;
+            height: 36px;
             border: none;
-            border-radius: 4px;
-            background-color: #007bff;
-            color: white;
+            border-radius: 8px;
+            background-color: #334155;
+            color: #f8fafc;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 13px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
         }
 
-        .btn-success { background-color: #28a745; }
-        .btn-secondary { background-color: #6c757d; }
-        .btn-warning { background-color: #fd7e14; } 
-        .btn-info { background-color: #17a2b8; }    
-        .btn-danger { background-color: #dc3545; }   
-        .btn-play { background-color: #6f42c1; } 
+        button:hover { background-color: #475569; }
+        button:active { transform: scale(0.96); }
+        button:disabled {
+            background-color: #1e293b;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary { background-color: #334155; color: #f8fafc; }
+        .btn-success { background-color: #16a34a; color: white; } 
+        .btn-success:hover { background-color: #15803d; }
+        .btn-danger { background-color: #dc2626; color: white; }  
+        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-gray { background-color: #475569 !important; color: #f8fafc !important;}
+        .btn-gray:hover { background-color: #334155 !important; }
+
+        .btn-sm {
+            width: auto !important;
+            height: auto !important;
+            padding: 5px 8px;
+            font-size: 11px;
+            border-radius: 6px;
+        }
 
         .formation-status {
             font-size: 14px;
-            font-weight: bold;
-            color: #333;
-            min-width: 65px;
+            font-weight: 700;
+            color: #f8fafc;
             text-align: center;
         }
 
-        /* 舞台外層響應式容器 */
         .stage-container {
             position: relative;
             width: 100%;
@@ -91,198 +108,336 @@
 
         .stage-front {
             text-align: center;
-            background-color: #343a40;
-            color: white;
-            padding: 6px 0;
-            font-size: 12px;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
+            background-color: #1e293b;
+            color: #f8fafc;
+            padding: 7px 0;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 12px 12px 0 0;
             letter-spacing: 2px;
         }
 
-        /* 虛擬縮放容器 */
         #scalerContainer {
             width: 100%;
             position: relative;
             overflow: hidden;
         }
 
-        /* 鎖 800x500 的標準虛擬畫布 */
         #stage {
             width: 800px;
             height: 500px;
             background-color: #ffffff;
-            border: 3px solid #343a40;
-            border-radius: 0 0 8px 8px;
+            border: 3px solid #1e293b;
+            border-radius: 0 0 12px 12px;
             box-sizing: border-box;
             position: absolute;
             left: 50%;
             transform-origin: top center; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
         }
 
-        /* 十字輔助線 */
-        #stage::before {
-            content: '';
+        .grid-line {
             position: absolute;
-            left: 400px; 
-            top: 0;
-            bottom: 0;
-            border-left: 1px dashed #ddd;
             pointer-events: none;
+            border-style: dashed;
+            border-color: #cbd5e0; 
+            border-width: 0;
         }
-        #stage::after {
-            content: '';
-            position: absolute;
-            top: 250px; 
-            left: 0;
-            right: 0;
-            border-top: 1px dashed #ddd;
-            pointer-events: none;
-        }
+        
+        .hl-1, .hl-2, .hl-3 { left: 0; right: 0; border-top-width: 1px; }
+        .hl-1 { top: 125px; border-color: #f1f5f9; }
+        .hl-2 { top: 250px; border-color: #94a3b8; border-top-width: 1.5px; } 
+        .hl-3 { top: 375px; border-color: #f1f5f9; }
 
-        /* 舞者樣式 */
+        .vl-1, .vl-2, .vl-3, .vl-4, .vl-5 { top: 0; bottom: 0; border-left-width: 1px; }
+        .vl-1 { left: 133.33px; border-color: #f1f5f9; }
+        .vl-2 { left: 266.67px; border-color: #f1f5f9; }
+        .vl-3 { left: 400px; border-color: #94a3b8; border-left-width: 1.5px; } 
+        .vl-4 { left: 533.33px; border-color: #f1f5f9; }
+        .vl-5 { left: 666.67px; border-color: #f1f5f9; }
+
         .dancer {
             width: 60px;  
             height: 60px; 
-            background-color: #ff4757;
             border-radius: 50%;
             position: absolute;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             cursor: move;
             user-select: none;
             touch-action: none; 
             transition: none; 
+            border: 2px solid rgba(0, 0, 0, 0.12); 
+            box-sizing: border-box;
         }
 
         .dancer:active {
-            transform: scale(1.15);
-            background-color: #ff6b81;
+            transform: scale(1.12);
+            filter: brightness(1.15); 
         }
 
         .dancer .dancer-label {
             color: white;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 16px;
             pointer-events: none; 
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5); 
         }
 
-        .fading-out {
-            pointer-events: none;
-        }
+        .fading-out { pointer-events: none; }
 
-        /* 隊形清單管理面板樣式 */
         .manager-panel {
-            background: white;
+            background: #1e293b;
             width: 100%;
             max-width: 800px;
-            margin-top: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 10px;
+            margin-top: 14px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 14px;
             box-sizing: border-box;
         }
 
         .manager-title {
             font-size: 14px;
-            font-weight: bold;
-            color: #444;
-            margin-bottom: 8px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 4px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
         }
 
         .formation-list {
-            max-height: 150px;
+            max-height: 160px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            padding-right: 5px;
+            gap: 6px;
+            padding-right: 4px;
         }
 
         .formation-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #f8f9fa;
-            padding: 6px 10px;
-            border-radius: 4px;
-            border-left: 4px solid #ccc;
+            background: #334155;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: background 0.2s;
         }
 
         .formation-item.active {
-            background: #e7f1ff;
-            border-left-color: #007bff;
+            background: #1e40af; 
+            border-left: 4px solid #3b82f6;
         }
 
         .item-name {
             font-size: 13px;
-            font-weight: bold;
-            color: #333;
+            font-weight: 600;
+            color: #f8fafc;
             cursor: pointer;
             flex-grow: 1;
         }
 
         .item-actions {
             display: flex;
-            gap: 4px;
+            gap: 5px;
         }
 
-        .btn-sm {
-            padding: 4px 8px;
-            font-size: 11px;
+        /* 自訂對話框與 Notification 樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 280px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .modal-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #f8fafc;
+        }
+        .modal-body {
+            font-size: 14px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        #promptInput {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            background-color: #334155;
+            border-radius: 8px;
+            text-align: center;
+            color: #f8fafc;
+            font-size: 14px;
+            font-weight: 600;
+            box-sizing: border-box;
+        }
+        #promptInput:focus {
+            outline: 2px solid #3b82f6;
+        }
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 10100;
+            pointer-events: none;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .toast {
+            background: rgba(30, 41, 59, 0.95);
+            color: #f8fafc;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid #334155;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
 
-    <h2> 舞蹈排位 </h2>
+    <h2>舞蹈排位</h2>
 
     <div class="control-panel">
-        <label for="dancerCount">人數:</label>
-        <input type="number" id="dancerCount" value="5" min="1" max="30">
-        <button onclick="confirmDancerCount()">確認</button>
+        <div class="control-row">
+            <div class="col-left">
+                <button onclick="adjustDancerCount(-1)" class="btn-secondary">➖ 減少</button>
+            </div>
+            <div class="col-center">
+                <span id="dancerCountDisplay" class="formation-status">5 人</span>
+            </div>
+            <div class="col-right">
+                <button onclick="adjustDancerCount(1)" class="btn-secondary">➕ 增加</button>
+            </div>
+        </div>
         
-        <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 1px;"></span>
+        <div class="control-row">
+            <div class="col-left">
+                <button class="btn-secondary" onclick="prevFormation()">◀ 上一幕</button>
+            </div>
+            <div class="col-center">
+                <span class="formation-status" id="formationDisplay">0 / 0</span>
+            </div>
+            <div class="col-right">
+                <button class="btn-secondary" onclick="nextFormation()">下一幕 ▶</button>
+            </div>
+        </div>
 
-        <button class="btn-secondary" onclick="prevFormation()">◀ 上一幕</button>
-        <span class="formation-status" id="formationDisplay">無隊形</span>
-        <button class="btn-secondary" onclick="nextFormation()">下一幕 ▶</button>
-        
-        <button class="btn-success" onclick="saveAsNewFormation()">新增隊形</button>
-        <button onclick="updateCurrentFormation()">更新此頁</button>
+        <div class="control-row">
+            <div class="col-left">
+                <button class="btn-success" onclick="saveAsNewFormation()">新增隊形</button>
+            </div>
+            <div class="col-center"></div>
+            <div class="col-right">
+                <button onclick="updateCurrentFormation()">儲存隊形</button>
+            </div>
+        </div>
 
-        <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 1px;"></span>
+        <div class="control-row">
+            <div class="col-left">
+                <button onclick="togglePlay()" id="playBtn">▶ 播放</button>
+            </div>
+            <div style="grid-column: span 2; display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 100%; box-sizing: border-box; padding-right: 2px;">
+                <input type="range" id="animSpeed" min="0.2" max="2.0" step="0.1" value="0.6" style="width: 140px; accent-color: #3b82f6; cursor: pointer;">
+                <span id="speedVal" style="font-size: 13px; font-weight: 600; min-width: 32px; color:#94a3b8; text-align: right;">0.6s</span>
+            </div>
+        </div>
 
-        <button class="btn-play" id="playBtn" onclick="togglePlay()">▶ 播放</button>
-        <input type="range" id="animSpeed" min="0.2" max="2.0" step="0.1" value="0.6">
-        <span id="speedVal" style="font-size: 11px; min-width: 25px;">0.6s</span>
-
-        <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 1px;"></span>
-
-        <button class="btn-warning" onclick="exportFormations()">📤 匯出</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importFormations(this)">
-        <button class="btn-info" onclick="document.getElementById('importFile').click()">📥 匯入</button>
-        <button class="btn-danger" onclick="clearAllData()">🗑️ 清空全部隊型</button>
+        <div class="control-row">
+            <div class="col-left">
+                <button onclick="exportFormations()">📤 匯出</button>
+            </div>
+            <div class="col-center">
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importFormations(this)">
+                <button onclick="document.getElementById('importFile').click()">📥 匯入</button>
+            </div>
+            <div class="col-right">
+                <button class="btn-danger" onclick="clearAllData()">🗑️ 清空</button>
+            </div>
+        </div>
     </div>
 
     <div class="stage-container">
         <div class="stage-front">▲ 舞台前方 (FRONT) ▲</div>
         <div id="scalerContainer">
-            <div id="stage"></div>
+            <div id="stage">
+                <div class="grid-line hl-1"></div>
+                <div class="grid-line hl-2"></div>
+                <div class="grid-line hl-3"></div>
+                <div class="grid-line vl-1"></div>
+                <div class="grid-line vl-2"></div>
+                <div class="grid-line vl-3"></div>
+                <div class="grid-line vl-4"></div>
+                <div class="grid-line vl-5"></div>
+            </div>
         </div>
     </div>
 
     <div class="manager-panel">
-        <div class="manager-title">📋 隊形順序 </div>
+        <div class="manager-title">📋 隊形順序</div>
         <div class="formation-list" id="formationListContainer">
-            <div style="color:#888; font-size:12px; text-align:center; padding: 10px;">暫無儲存隊形，請先點擊「新增隊形」</div>
+            <div style="color:#64748b; font-size:12px; text-align:center; padding: 10px;">暫無儲存隊形，請先點擊「新增隊形」</div>
         </div>
     </div>
+
+    <!-- 自訂 Modal 節點 -->
+    <div id="customModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <div id="modalMessage" class="modal-body"></div>
+            <div class="modal-actions">
+                <button id="modalCancelBtn" class="btn-secondary">取消</button>
+                <button id="modalConfirmBtn" class="btn-success">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customPrompt" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <div id="promptTitle" class="modal-title"></div>
+            <input type="text" id="promptInput" maxlength="3">
+            <div class="modal-actions">
+                <button id="promptCancelBtn" class="btn-secondary">取消</button>
+                <button id="promptConfirmBtn" class="btn-success">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
 
     <script>
         let formations = []; 
@@ -291,6 +446,78 @@
         let currentScale = 1; 
         const stage = document.getElementById('stage');
         const scalerContainer = document.getElementById('scalerContainer');
+
+        const dancerColors = [
+            { bg: '#ef4444', glow: 'rgba(239, 68, 68, 0.4)' }, // 1. 紅
+            { bg: '#f472b6', glow: 'rgba(244, 114, 182, 0.4)' }, // 2. 粉
+            { bg: '#f97316', glow: 'rgba(249, 115, 22, 0.4)' }, // 3. 橘
+            { bg: '#eab308', glow: 'rgba(234, 179, 8, 0.4)' },  // 4. 黃
+            { bg: '#22c55e', glow: 'rgba(34, 197, 94, 0.4)' },  // 5. 綠
+            { bg: '#06b6d4', glow: 'rgba(6, 182, 212, 0.4)' },  // 6. 淺藍
+            { bg: '#1d4ed8', glow: 'rgba(29, 78, 216, 0.4)' },  // 7. 深藍
+            { bg: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)' }, // 8. 紫
+            { bg: '#78350f', glow: 'rgba(120, 53, 15, 0.4)' },  // 9. 褐
+            { bg: '#111827', glow: 'rgba(17, 24, 39, 0.4)' }   // 10. 黑
+        ];
+
+        /* 自訂彈窗與 Notify 實作 */
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        function showConfirm(message, callback) {
+            const modal = document.getElementById('customModal');
+            const msgEl = document.getElementById('modalMessage');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            const cancelBtn = document.getElementById('modalCancelBtn');
+
+            msgEl.textContent = message;
+            modal.style.display = 'flex';
+
+            function cleanup() {
+                modal.style.display = 'none';
+                confirmBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
+            }
+            function onConfirm() { cleanup(); if (callback) callback(); }
+            function onCancel() { cleanup(); }
+
+            confirmBtn.addEventListener('click', onConfirm);
+            cancelBtn.addEventListener('click', onCancel);
+        }
+
+        function showPrompt(title, defaultValue, callback) {
+            const modal = document.getElementById('customPrompt');
+            const titleEl = document.getElementById('promptTitle');
+            const input = document.getElementById('promptInput');
+            const confirmBtn = document.getElementById('promptConfirmBtn');
+            const cancelBtn = document.getElementById('promptCancelBtn');
+
+            titleEl.textContent = title;
+            input.value = defaultValue;
+            modal.style.display = 'flex';
+            setTimeout(() => { input.focus(); input.select(); }, 50);
+
+            function cleanup() {
+                modal.style.display = 'none';
+                confirmBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
+            }
+            function onConfirm() { cleanup(); if (callback) callback(input.value); }
+            function onCancel() { cleanup(); }
+
+            confirmBtn.addEventListener('click', onConfirm);
+            cancelBtn.addEventListener('click', onCancel);
+        }
 
         function resizeStage() {
             const containerWidth = scalerContainer.clientWidth;
@@ -319,7 +546,7 @@
                         return;
                     }
                 } catch (e) {
-                    console.error("讀取自動存檔失敗", e);
+                    console.error(e);
                 }
             }
             generateDefaultDancers(5);
@@ -329,7 +556,6 @@
             localStorage.setItem('danceFormationsData', JSON.stringify(formations));
         }
 
-        // 抽取出來的共用存檔邏輯
         function saveCurrentState() {
             if (currentIndex !== -1) {
                 formations[currentIndex] = getStageState();
@@ -338,26 +564,27 @@
         }
 
         function generateDefaultDancers(count) {
-            stage.innerHTML = '';
+            stage.querySelectorAll('.dancer').forEach(d => d.remove());
             const spacing = 800 / (count + 1);
             for (let i = 0; i < count; i++) {
-                createDancerElement(spacing * (i + 1) - 30, 250 - 30, (i + 1).toString());
+                createDancerElement(spacing * (i + 1) - 30, 250 - 30, (i + 1).toString(), i);
             }
+            document.getElementById('dancerCountDisplay').textContent = `${count} 人`;
         }
 
-        function confirmDancerCount() {
-            const targetCount = parseInt(document.getElementById('dancerCount').value);
-            if (isNaN(targetCount) || targetCount < 1 || targetCount > 30) return;
-
+        function adjustDancerCount(offset) {
             const currentDancers = stage.querySelectorAll('.dancer:not(.fading-out)');
             const currentCount = currentDancers.length;
+            const targetCount = currentCount + offset;
 
-            if (targetCount === currentCount) return;
+            if (targetCount < 1 || targetCount > 30) return;
+
+            document.getElementById('dancerCountDisplay').textContent = `${targetCount} 人`;
 
             if (targetCount > currentCount) {
                 for (let i = currentCount; i < targetCount; i++) {
-                    const offset = (i - currentCount) * 15;
-                    createDancerElement(400 - 30 + offset, 250 - 30 + offset, (i + 1).toString());
+                    const spacingOffset = (i - currentCount) * 15;
+                    createDancerElement(400 - 30 + spacingOffset, 250 - 30 + spacingOffset, (i + 1).toString(), i);
                 }
             } else {
                 for (let i = currentCount - 1; i >= targetCount; i--) {
@@ -368,11 +595,15 @@
             updateUI();
         }
 
-        function createDancerElement(x, y, label) {
+        function createDancerElement(x, y, label, index) {
             const dancer = document.createElement('div');
             dancer.className = 'dancer';
             dancer.style.left = x + 'px';
             dancer.style.top = y + 'px';
+
+            const colorObj = dancerColors[index % 10];
+            dancer.style.backgroundColor = colorObj.bg;
+            dancer.style.boxShadow = `0 4px 10px ${colorObj.glow}`;
 
             const labelSpan = document.createElement('span');
             labelSpan.className = 'dancer-label';
@@ -394,12 +625,13 @@
 
         function editDancerLabel(labelElement) {
             const currentName = labelElement.textContent;
-            const newName = prompt("請輸入舞者新代號：", currentName);
-            if (newName !== null) {
-                const trimmed = newName.trim();
-                labelElement.textContent = trimmed !== "" ? trimmed.substring(0, 3) : currentName;
-                saveCurrentState();
-            }
+            showPrompt("請輸入舞者新代號：", currentName, (newName) => {
+                if (newName !== null) {
+                    const trimmed = newName.trim();
+                    labelElement.textContent = trimmed !== "" ? trimmed.substring(0, 3) : currentName;
+                    saveCurrentState();
+                }
+            });
         }
 
         function setupDragAndDrop(element) {
@@ -478,12 +710,16 @@
                     dancer.querySelector('.dancer-label').textContent = d.label;
                     dancer.style.opacity = '1';
                 } else {
-                    dancer = createDancerElement(d.x, d.y, d.label);
+                    dancer = createDancerElement(d.x, d.y, d.label, i); 
                     dancer.style.opacity = '0';
                     dancer.style.transition = `opacity ${speed}s ease-in-out`;
                     dancer.offsetHeight; 
                     dancer.style.opacity = '1';
                 }
+
+                const colorObj = dancerColors[i % 10];
+                dancer.style.backgroundColor = colorObj.bg;
+                dancer.style.boxShadow = `0 4px 10px ${colorObj.glow}`;
             });
 
             if (currentDancers.length > targetData.length) {
@@ -495,17 +731,16 @@
                     setTimeout(() => { extraDancer.remove(); }, speed * 1000);
                 }
             }
-            document.getElementById('dancerCount').value = targetData.length;
+            document.getElementById('dancerCountDisplay').textContent = `${targetData.length} 人`;
         }
 
-        // 精簡重構後的 UI 渲染器
         function updateUI() {
             const display = document.getElementById('formationDisplay');
             const listContainer = document.getElementById('formationListContainer');
             
             if (formations.length === 0) {
-                display.textContent = "無隊形";
-                listContainer.innerHTML = `<div style="color:#888; font-size:12px; text-align:center; padding: 10px;">暫無儲存隊形，請先點擊「新增隊形」</div>`;
+                display.textContent = "0 / 0";
+                listContainer.innerHTML = `<div style="color:#64748b; font-size:12px; text-align:center; padding: 10px;">暫無儲存隊形，請先點擊「新增隊形」</div>`;
                 return;
             }
 
@@ -521,9 +756,9 @@
                             第 ${index + 1} 幕隊形 (${form.length}人)
                         </span>
                         <div class="item-actions">
-                            <button class="btn-secondary btn-sm" ${isFirst} onclick="event.stopPropagation(); swapFormations(${index}, ${index - 1})">⬆️</button>
-                            <button class="btn-secondary btn-sm" ${isLast} onclick="event.stopPropagation(); swapFormations(${index}, ${index + 1})">⬇️</button>
-                            <button class="btn-danger btn-sm" onclick="event.stopPropagation(); deleteSingleFormation(${index})">❌</button>
+                            <button class="btn-sm" ${isFirst} onclick="event.stopPropagation(); swapFormations(${index}, ${index - 1})">⬆️</button>
+                            <button class="btn-sm" ${isLast} onclick="event.stopPropagation(); swapFormations(${index}, ${index + 1})">⬇️</button>
+                            <button class="btn-gray btn-sm" onclick="event.stopPropagation(); deleteSingleFormation(${index})">❌</button>
                         </div>
                     </div>
                 `;
@@ -537,7 +772,6 @@
             updateUI();
         }
 
-        // 合併上移與下移的共用核心
         function swapFormations(idx1, idx2) {
             const temp = formations[idx1];
             formations[idx1] = formations[idx2];
@@ -552,18 +786,19 @@
         }
 
         function deleteSingleFormation(index) {
-            if (!confirm(`確定要刪除「第 ${index + 1} 幕隊形」嗎？`)) return;
-            formations.splice(index, 1);
-
-            if (formations.length === 0) {
-                currentIndex = -1;
-                generateDefaultDancers(5);
-            } else {
-                if (currentIndex >= formations.length) currentIndex = formations.length - 1;
-                renderFormation(currentIndex);
-            }
-            autoSaveToLocal();
-            updateUI();
+            showConfirm(`確定要刪除「第 ${index + 1} 幕隊形」嗎？`, () => {
+                formations.splice(index, 1);
+                if (formations.length === 0) {
+                    currentIndex = -1;
+                    generateDefaultDancers(5);
+                } else {
+                    if (currentIndex >= formations.length) currentIndex = formations.length - 1;
+                    renderFormation(currentIndex);
+                }
+                autoSaveToLocal();
+                updateUI();
+                showToast("🧹 已刪除隊形");
+            });
         }
 
         function saveAsNewFormation() {
@@ -574,18 +809,18 @@
             currentIndex = formations.length - 1;
             autoSaveToLocal();
             updateUI();
-            alert(`已儲存為新隊形 ${formations.length}`);
+            showToast(`已儲存為新隊形 ${formations.length}`);
         }
 
         function updateCurrentFormation() {
             if (currentIndex === -1 || formations.length === 0) {
-                alert("請先點擊「新增隊形」！");
+                showToast("請先點擊「新增隊形」！");
                 return;
             }
             formations[currentIndex] = getStageState();
             autoSaveToLocal();
             updateUI(); 
-            alert(`隊形 ${currentIndex + 1} 已成功更新！`);
+            showToast(`隊形 ${currentIndex + 1} 已成功更新！`);
         }
 
         function prevFormation() {
@@ -610,16 +845,16 @@
                 clearInterval(playInterval);
                 playInterval = null;
                 playBtn.textContent = "▶ 播放";
-                playBtn.classList.remove('btn-danger');
-                playBtn.classList.add('btn-play');
+                playBtn.style.backgroundColor = ""; 
+                playBtn.style.color = "";
             } else {
                 if (formations.length < 2) {
-                    alert("請至少先儲存兩個以上的隊形再播放動畫！");
+                    showToast("請至少儲存兩個以上的隊形！");
                     return;
                 }
                 playBtn.textContent = "⏸ 暫停";
-                playBtn.classList.remove('btn-play');
-                playBtn.classList.add('btn-danger');
+                playBtn.style.backgroundColor = "#f8fafc"; 
+                playBtn.style.color = "#0f172a";
 
                 const intervalTime = (speed + 0.4) * 1000; 
 
@@ -633,7 +868,7 @@
 
         function exportFormations() {
             if (formations.length === 0) {
-                alert("目前沒有任何儲存的隊形可以匯出！");
+                showToast("目前沒有任何儲存的隊形可以匯出！");
                 return;
             }
             const dataStr = JSON.stringify(formations, null, 2);
@@ -659,20 +894,20 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     if (Array.isArray(importedData) && importedData.length > 0 && Array.isArray(importedData[0])) {
-                        if (confirm(`偵測到檔案內有 ${importedData.length} 個隊形，要覆蓋目前的進度並匯入嗎？`)) {
+                        showConfirm(`偵測到檔案內有 ${importedData.length} 個隊形，要覆蓋目前的進度並匯入嗎？`, () => {
                             if (playInterval) togglePlay(); 
                             formations = importedData;
                             currentIndex = 0;
                             renderFormation(currentIndex);
                             updateUI();
                             autoSaveToLocal();
-                            alert("📥 隊形檔案匯入成功！");
-                        }
+                            showToast("📥 隊形檔案匯入成功！");
+                        });
                     } else {
-                        alert("錯誤：這似乎不是正確的隊形備份檔案。");
+                        showToast("錯誤：這似乎不是正確的隊形備份檔案。");
                     }
                 } catch (err) {
-                    alert("讀取檔案失敗。");
+                    showToast("讀取檔案失敗。");
                 }
                 input.value = ''; 
             };
@@ -680,14 +915,15 @@
         }
 
         function clearAllData() {
-            if (!confirm("確定要刪除所有隊形、清除所有快取嗎？（此動作無法復原）")) return;
-            if (playInterval) togglePlay();
-            localStorage.removeItem('danceFormationsData');
-            formations = [];
-            currentIndex = -1;
-            document.getElementById('dancerCount').value = 5;
-            generateDefaultDancers(5);
-            updateUI();
+            showConfirm("確定要刪除所有隊形、清除所有快取嗎？（此動作無法復原）", () => {
+                if (playInterval) togglePlay();
+                localStorage.removeItem('danceFormationsData');
+                formations = [];
+                currentIndex = -1;
+                generateDefaultDancers(5);
+                updateUI();
+                showToast("🧹 已清除所有隊形與快取");
+            });
         }
     </script>
 </body>
