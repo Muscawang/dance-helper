@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-color=1.0, user-scalable=no">
-    <title>智慧舞蹈排隊形工具 - 完美比例縮放版</title>
+    <title>舞蹈排隊形</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -100,14 +100,14 @@
             letter-spacing: 2px;
         }
 
-        /* 【關鍵修正】虛擬縮放容器，高度會由 JS 動態重算，防止縮小後下方留大白邊 */
+        /* 虛擬縮放容器，高度會由 JS 動態重算，防止縮小後下方留大白邊 */
         #scalerContainer {
             width: 100%;
             position: relative;
             overflow: hidden;
         }
 
-        /* 【關鍵修正】死鎖 800x500 的標準虛擬畫布 */
+        /* 鎖 800x500 的標準虛擬畫布 */
         #stage {
             width: 800px;
             height: 500px;
@@ -121,7 +121,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
 
-        /* 十字輔助線 (永遠跟隨 800x500 的絕對正中央) */
+        /* 十字輔助線 (跟隨 800x500 的絕對正中央) */
         #stage::before {
             content: '';
             position: absolute;
@@ -267,7 +267,7 @@
         <button class="btn-warning" onclick="exportFormations()">📤 匯出</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importFormations(this)">
         <button class="btn-info" onclick="document.getElementById('importFile').click()">📥 匯入</button>
-        <button class="btn-danger" onclick="clearAllData()">🗑️ 清空</button>
+        <button class="btn-danger" onclick="clearAllData()">🗑️ 清空全部隊型</button>
     </div>
 
     <div class="stage-container">
