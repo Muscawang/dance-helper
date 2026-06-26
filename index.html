@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-color=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>舞蹈排隊形</title>
     <style>
         body {
@@ -86,7 +86,7 @@
         .stage-container {
             position: relative;
             width: 100%;
-            max-width: 800px; /* 鎖定基礎畫布寬度 */
+            max-width: 800px; 
         }
 
         .stage-front {
@@ -100,7 +100,7 @@
             letter-spacing: 2px;
         }
 
-        /* 虛擬縮放容器，高度會由 JS 動態重算，防止縮小後下方留大白邊 */
+        /* 虛擬縮放容器 */
         #scalerContainer {
             width: 100%;
             position: relative;
@@ -117,15 +117,15 @@
             box-sizing: border-box;
             position: absolute;
             left: 50%;
-            transform-origin: top center; /* 從上方正中央等比例縮放 */
+            transform-origin: top center; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
 
-        /* 十字輔助線 (跟隨 800x500 的絕對正中央) */
+        /* 十字輔助線 */
         #stage::before {
             content: '';
             position: absolute;
-            left: 400px; /* 800 / 2 */
+            left: 400px; 
             top: 0;
             bottom: 0;
             border-left: 1px dashed #ddd;
@@ -134,7 +134,7 @@
         #stage::after {
             content: '';
             position: absolute;
-            top: 250px; /* 500 / 2 */
+            top: 250px; 
             left: 0;
             right: 0;
             border-top: 1px dashed #ddd;
@@ -288,23 +288,17 @@
         let formations = []; 
         let currentIndex = -1; 
         let playInterval = null; 
-        let currentScale = 1; // 【新增】儲存當前的螢幕縮放比率
+        let currentScale = 1; 
         const stage = document.getElementById('stage');
         const scalerContainer = document.getElementById('scalerContainer');
 
-        // 【新增】動態計算舞台縮放尺寸，完美對齊中央
         function resizeStage() {
             const containerWidth = scalerContainer.clientWidth;
-            // 基礎標準是 800px，計算當前縮放比 (手機上小於1，大螢幕最大為1不放大)
             currentScale = Math.min(containerWidth / 800, 1); 
-            
-            // 執行 CSS 等比例縮放，並維持水平置中 (-50%)
             stage.style.transform = `translateX(-50%) scale(${currentScale})`;
-            // 動態重算外層高度，避免下方流出大量空白
             scalerContainer.style.height = (500 * currentScale) + 'px';
         }
 
-        // 監聽視窗大小改變
         window.addEventListener('resize', resizeStage);
 
         document.getElementById('animSpeed').addEventListener('input', function(e) {
@@ -312,8 +306,7 @@
         });
 
         window.onload = function() {
-            resizeStage(); // 初始化縮放
-            
+            resizeStage(); 
             const autoSavedData = localStorage.getItem('danceFormationsData');
             if (autoSavedData) {
                 try {
@@ -336,16 +329,19 @@
             localStorage.setItem('danceFormationsData', JSON.stringify(formations));
         }
 
-        // 基底固定 800x500 計算初始位置
+        // 抽取出來的共用存檔邏輯
+        function saveCurrentState() {
+            if (currentIndex !== -1) {
+                formations[currentIndex] = getStageState();
+                autoSaveToLocal();
+            }
+        }
+
         function generateDefaultDancers(count) {
             stage.innerHTML = '';
             const spacing = 800 / (count + 1);
-
             for (let i = 0; i < count; i++) {
-                const defaultLabel = (i + 1).toString(); 
-                const x = spacing * (i + 1) - 30; 
-                const y = 250 - 30; // 固定高度 500 / 2 = 250
-                createDancerElement(x, y, defaultLabel);
+                createDancerElement(spacing * (i + 1) - 30, 250 - 30, (i + 1).toString());
             }
         }
 
@@ -360,23 +356,16 @@
 
             if (targetCount > currentCount) {
                 for (let i = currentCount; i < targetCount; i++) {
-                    const defaultLabel = (i + 1).toString();
                     const offset = (i - currentCount) * 15;
-                    const x = 400 - 30 + offset; // 800 / 2 = 400
-                    const y = 250 - 30 + offset; // 500 / 2 = 250
-                    createDancerElement(x, y, defaultLabel);
+                    createDancerElement(400 - 30 + offset, 250 - 30 + offset, (i + 1).toString());
                 }
             } else {
                 for (let i = currentCount - 1; i >= targetCount; i--) {
                     currentDancers[i].remove();
                 }
             }
-
-            if (currentIndex !== -1) {
-                formations[currentIndex] = getStageState();
-                autoSaveToLocal();
-                updateUI();
-            }
+            saveCurrentState();
+            updateUI();
         }
 
         function createDancerElement(x, y, label) {
@@ -409,14 +398,10 @@
             if (newName !== null) {
                 const trimmed = newName.trim();
                 labelElement.textContent = trimmed !== "" ? trimmed.substring(0, 3) : currentName;
-                if (currentIndex !== -1) {
-                    formations[currentIndex] = getStageState();
-                    autoSaveToLocal();
-                }
+                saveCurrentState();
             }
         }
 
-        // 【極致優化】加入物理縮放比率計算，防止手機上拖曳飄移
         function setupDragAndDrop(element) {
             let isDragging = false;
             let lastClientX, lastClientY;
@@ -425,11 +410,8 @@
                 if (element.classList.contains('fading-out')) return;
                 isDragging = true;
                 element.style.transition = 'none';
-
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                // 記錄最初的觸控點
                 lastClientX = clientX;
                 lastClientY = clientY;
             }
@@ -439,14 +421,12 @@
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-                // 【核心修正】物理位移必須除以當前的縮放比率 (currentScale)
                 let deltaX = (clientX - lastClientX) / currentScale;
                 let deltaY = (clientY - lastClientY) / currentScale;
 
                 let newX = (parseFloat(element.style.left) || 0) + deltaX;
                 let newY = (parseFloat(element.style.top) || 0) + deltaY;
 
-                // 邊界一律以 800x500 的絕對標準計算
                 const maxX = 800 - element.clientWidth;
                 const maxY = 500 - element.clientHeight;
                 
@@ -456,16 +436,12 @@
                 element.style.left = newX + 'px';
                 element.style.top = newY + 'px';
 
-                // 滾動刷新起點
                 lastClientX = clientX;
                 lastClientY = clientY;
             }
 
             function onEnd() {
-                if (isDragging && currentIndex !== -1) {
-                    formations[currentIndex] = getStageState();
-                    autoSaveToLocal();
-                }
+                if (isDragging) { saveCurrentState(); }
                 isDragging = false;
             }
 
@@ -479,16 +455,11 @@
         }
 
         function getStageState() {
-            const dancers = stage.querySelectorAll('.dancer:not(.fading-out)');
-            const state = [];
-            dancers.forEach(d => {
-                state.push({
-                    x: parseInt(d.style.left),
-                    y: parseInt(d.style.top),
-                    label: d.querySelector('.dancer-label').textContent
-                });
-            });
-            return state;
+            return Array.from(stage.querySelectorAll('.dancer:not(.fading-out)')).map(d => ({
+                x: parseInt(d.style.left) || 0,
+                y: parseInt(d.style.top) || 0,
+                label: d.querySelector('.dancer-label').textContent
+            }));
         }
 
         function renderFormation(index) {
@@ -524,10 +495,10 @@
                     setTimeout(() => { extraDancer.remove(); }, speed * 1000);
                 }
             }
-
             document.getElementById('dancerCount').value = targetData.length;
         }
 
+        // 精簡重構後的 UI 渲染器
         function updateUI() {
             const display = document.getElementById('formationDisplay');
             const listContainer = document.getElementById('formationListContainer');
@@ -540,44 +511,23 @@
 
             display.textContent = `${currentIndex + 1} / ${formations.length}`;
 
-            listContainer.innerHTML = '';
-            formations.forEach((form, index) => {
-                const item = document.createElement('div');
-                item.className = `formation-item ${index === currentIndex ? 'active' : ''}`;
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'item-name';
-                nameSpan.textContent = `第 ${index + 1} 幕隊形 (${form.length}人)`;
-                nameSpan.onclick = () => jumpToFormation(index);
-                
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'item-actions';
-
-                const upBtn = document.createElement('button');
-                upBtn.className = 'btn-secondary btn-sm';
-                upBtn.textContent = '⬆️';
-                upBtn.disabled = index === 0; 
-                upBtn.onclick = (e) => { e.stopPropagation(); moveFormationUp(index); };
-
-                const downBtn = document.createElement('button');
-                downBtn.className = 'btn-secondary btn-sm';
-                downBtn.textContent = '⬇️';
-                downBtn.disabled = index === formations.length - 1; 
-                downBtn.onclick = (e) => { e.stopPropagation(); moveFormationDown(index); };
-
-                const delBtn = document.createElement('button');
-                delBtn.className = 'btn-danger btn-sm';
-                delBtn.textContent = '❌';
-                delBtn.onclick = (e) => { e.stopPropagation(); deleteSingleFormation(index); };
-
-                actionsDiv.appendChild(upBtn);
-                actionsDiv.appendChild(downBtn);
-                actionsDiv.appendChild(delBtn);
-
-                item.appendChild(nameSpan);
-                item.appendChild(actionsDiv);
-                listContainer.appendChild(item);
-            });
+            listContainer.innerHTML = formations.map((form, index) => {
+                const isActive = index === currentIndex ? 'active' : '';
+                const isFirst = index === 0 ? 'disabled' : '';
+                const isLast = index === formations.length - 1 ? 'disabled' : '';
+                return `
+                    <div class="formation-item ${isActive}">
+                        <span class="item-name" onclick="jumpToFormation(${index})">
+                            第 ${index + 1} 幕隊形 (${form.length}人)
+                        </span>
+                        <div class="item-actions">
+                            <button class="btn-secondary btn-sm" ${isFirst} onclick="event.stopPropagation(); swapFormations(${index}, ${index - 1})">⬆️</button>
+                            <button class="btn-secondary btn-sm" ${isLast} onclick="event.stopPropagation(); swapFormations(${index}, ${index + 1})">⬇️</button>
+                            <button class="btn-danger btn-sm" onclick="event.stopPropagation(); deleteSingleFormation(${index})">❌</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function jumpToFormation(index) {
@@ -587,28 +537,14 @@
             updateUI();
         }
 
-        function moveFormationUp(index) {
-            if (index <= 0) return;
-            const temp = formations[index];
-            formations[index] = formations[index - 1];
-            formations[index - 1] = temp;
+        // 合併上移與下移的共用核心
+        function swapFormations(idx1, idx2) {
+            const temp = formations[idx1];
+            formations[idx1] = formations[idx2];
+            formations[idx2] = temp;
 
-            if (currentIndex === index) { currentIndex--; } 
-            else if (currentIndex === index - 1) { currentIndex++; }
-
-            autoSaveToLocal();
-            renderFormation(currentIndex);
-            updateUI();
-        }
-
-        function moveFormationDown(index) {
-            if (index >= formations.length - 1) return;
-            const temp = formations[index];
-            formations[index] = formations[index + 1];
-            formations[index + 1] = temp;
-
-            if (currentIndex === index) { currentIndex++; } 
-            else if (currentIndex === index + 1) { currentIndex--; }
+            if (currentIndex === idx1) currentIndex = idx2;
+            else if (currentIndex === idx2) currentIndex = idx1;
 
             autoSaveToLocal();
             renderFormation(currentIndex);
@@ -623,12 +559,9 @@
                 currentIndex = -1;
                 generateDefaultDancers(5);
             } else {
-                if (currentIndex >= formations.length) {
-                    currentIndex = formations.length - 1;
-                }
+                if (currentIndex >= formations.length) currentIndex = formations.length - 1;
                 renderFormation(currentIndex);
             }
-
             autoSaveToLocal();
             updateUI();
         }
@@ -691,11 +624,7 @@
                 const intervalTime = (speed + 0.4) * 1000; 
 
                 playInterval = setInterval(() => {
-                    if (currentIndex < formations.length - 1) {
-                        currentIndex++;
-                    } else {
-                        currentIndex = 0; 
-                    }
+                    currentIndex = (currentIndex < formations.length - 1) ? currentIndex + 1 : 0;
                     renderFormation(currentIndex);
                     updateUI();
                 }, intervalTime);
@@ -751,15 +680,14 @@
         }
 
         function clearAllData() {
-            if (confirm("確定要刪除所有隊形、清除所有快取嗎？（此動作無法復原）")) {
-                if (playInterval) togglePlay();
-                localStorage.removeItem('danceFormationsData');
-                formations = [];
-                currentIndex = -1;
-                document.getElementById('dancerCount').value = 5;
-                generateDefaultDancers(5);
-                updateUI();
-            }
+            if (!confirm("確定要刪除所有隊形、清除所有快取嗎？（此動作無法復原）")) return;
+            if (playInterval) togglePlay();
+            localStorage.removeItem('danceFormationsData');
+            formations = [];
+            currentIndex = -1;
+            document.getElementById('dancerCount').value = 5;
+            generateDefaultDancers(5);
+            updateUI();
         }
     </script>
 </body>
